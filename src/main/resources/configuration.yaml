@@ -1,0 +1,24 @@
+#Rabbitmq - Cloudamqp Service
+rabbitmq:
+  host: "chimpanzee.rmq.cloudamqp.com"
+  #For Cloudmap free tier, virtualhost and user is the same
+  virtualhost: "abcdefgh"
+  user: "abcdefgh"
+  password: "ZZDu30SUZnabFvW6uxcTN3v1234567abcabd"
+  port: "5672"
+  
+customercreate-queues:
+  topic: "customer.create"
+  database: "customer.create.database"
+  payments: "customer.create.payments"
+  
+#Postgresql - Corporate Database
+database:
+  url: "jdbc:postgresql://ec2-11-111-111-11.compute-1.amazonaws.com:5432/abcdedfghijkmnklo"
+  driver: "org.postgresql.Driver"
+  user: "myuser"
+  password: "mypassword"
+
+#Stripe - Payment proccesor
+paymentsprocessor:
+  authorizationkey: "sk_test_abcde12345abcde12345abcde12345abcde12345abcde12345abcde12345abcde12345"

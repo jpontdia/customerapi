@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:stripe="http://www.mulesoft.org/schema/mule/stripe"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:amqp="http://www.mulesoft.org/schema/mule/amqp" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/amqp http://www.mulesoft.org/schema/mule/amqp/current/mule-amqp.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/stripe http://www.mulesoft.org/schema/mule/stripe/current/mule-stripe.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<stripe:config name="Stripe_Connector_Config" doc:name="Stripe Connector Config" doc:id="edf0b82c-c3c4-43a7-91d4-b1089951bf59" >
+		<stripe:api-key-connection authorization="${paymentsprocessor.authorizationkey}" />
+	</stripe:config>
+	<flow name="CreateCustomerPayment" doc:id="283597fd-35e2-46bf-8717-6cea1af40792" >
+		<amqp:listener doc:name="Consume from customer.create.payments" doc:id="86d9048c-f5fa-4987-8ca7-68f0e2470573" config-ref="AMQP_Config" queueName="${customercreate-queues.payments}"/>
+		<logger level="INFO" doc:name="Logger" doc:id="28a73ba1-5c04-44bb-bc55-b30117fb5127" message="Consumer: CustomerCreatePayment"/>
+		<ee:transform doc:name="Set Stripe Payload" doc:id="2a95d161-980e-411c-8b38-0d68c65c34c7" >
+			<ee:variables >
+				<ee:set-variable variableName="stripePayload" ><![CDATA[%dw 2.0
+output text/plain
+---
+"description=" ++ (payload.firstName
+default "") ++ " " ++ payload.lastName
+++ "&" ++
+"email=" ++ payload.email
+++ "&" ++
+"phone=" ++ payload.phone
+++ "&" ++
+"address[line1]=" ++ payload.deliveryAddresses[1].address
+++ "&" ++
+"address[city]=" ++ payload.deliveryAddresses[1].city
+++ "&" ++
+"address[postal_code]=" ++ payload.deliveryAddresses[1].postalCode
+++ "&" ++
+"address[state]=" ++ payload.deliveryAddresses[1].state
+++ "&" ++
+"address[country]=" ++ payload.deliveryAddresses[1].country
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d881e7c7-6588-4fc9-be22-da478327a4a0" message="Customer Stripe: #[vars.stripePayload]"/>
+		<stripe:create-v1-customers doc:name="Create a customer" doc:id="86ae27d1-5298-4f4f-83a7-a8fe031bbdbc" config-ref="Stripe_Connector_Config">
+			<ee:repeatable-file-store-stream bufferUnit="MB" />
+			<stripe:create-customer-content ><![CDATA[#[vars.stripePayload]]]></stripe:create-customer-content>
+		</stripe:create-v1-customers>
+	</flow>
+</mule>

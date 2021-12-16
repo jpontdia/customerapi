@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="json" format="json">
+      <types:shape format="weave" example="examples/customer.json"><![CDATA[%dw 2.0
+
+type json = {|
+  customerId: String, 
+  firstName: String, 
+  lastName: String, 
+  phone: String, 
+  email: String, 
+  deliveryAddresses: Array<{|    "type": String,     address: String,     city: String,     postalCode: String,     state: String,     country: String  |}>
+|} {"example": "{\\\"customerId\\\":\\\"0123456789\\\",\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\",\\\"phone\\\":\\\"+1-202-555-0180\\\",\\\"email\\\":\\\"john.doe@example.com\\\",\\\"deliveryAddresses\\\":[{\\\"type\\\":\\\"SHIPPING\\\",\\\"address\\\":\\\"44 Shirley Ave.\\\",\\\"city\\\":\\\"West Chicago\\\",\\\"postalCode\\\":\\\"60185\\\",\\\"state\\\":\\\"IL\\\",\\\"country\\\":\\\"USA\\\"},{\\\"type\\\":\\\"BILLING\\\",\\\"address\\\":\\\"44 Shirley Ave.\\\",\\\"city\\\":\\\"West Chicago\\\",\\\"postalCode\\\":\\\"60185\\\",\\\"state\\\":\\\"IL\\\",\\\"country\\\":\\\"USA\\\"}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="CustomerStripe" format="json">
+      <types:shape format="weave" example="examples/customer-stripe-1.json"><![CDATA[%dw 2.0
+
+type CustomerStripe = {|
+  name: String, 
+  description: String, 
+  address: String, 
+  email: String, 
+  phone: String
+|} {"example": "{\\\"name\\\":\\\"John\\\",\\\"description\\\":\\\"John Doe\\\",\\\"address\\\":\\\"Some address\\\",\\\"email\\\":\\\"john.doe@example.com\\\",\\\"phone\\\":\\\"+1-202-555-0180\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#2a95d161-980e-411c-8b38-0d68c65c34c7">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="json"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="CustomerStripe"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
